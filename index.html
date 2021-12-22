@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulging Barbarians</title>
+  <link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/base.css">
+  <link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/chat.css">
+</head>
+<body>
+  <IMG SRC="https://scontent-ort2-1.xx.fbcdn.net/v/t39.30808-6/268603529_10227185429691326_4594310811005354797_n.jpg?_nc_cat=110&ccb=1-5&_nc_sid=ad2b24&_nc_ohc=Nyyi_zD3WSsAX8Xcr8T&_nc_oc=AQnK94VApjLuwtVLLrhEaQ4D3un4yVWxym1LFlI1df-26bzdSAHMxzC47QE2nVxm6ls&_nc_ht=scontent-ort2-1.xx&oh=00_AT81pQTLLvz67-7IdXmB8olM9smfCZ3HRgs6i5Unw7wjpg&oe=61C8EF5B" width="500" height="320">
+  <main id="main" class="container">
+    <h1>Fort Knights - Paths to Dubs</h1>
+    <form class="form" onsubmit="sendMessage(event.preventDefault())">
+      <input type="text" id="message-text" placeholder="Enter message here">
+      <button type="submit" class="button button-primary">Record Dub</button>
+    </form>
+
+    <h2>Recorded Dubs:</h2>
+  </main>
+
+  <script src="//unpkg.com/@feathersjs/client@^4.3.0/dist/feathers.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script type="text/javascript">
+    // Set up socket.io
+    const socket = io('http://localhost:3030');
+    // Initialize a Feathers app
+    const app = feathers();
+    
+    // Register socket.io to talk to our server
+    app.configure(feathers.socketio(socket));
+
+    // Form submission handler that sends a new message
+    async function sendMessage () {
+      const messageInput = document.getElementById('message-text');
+
+      // Create a new message with the input field value
+      await app.service('messages').create({
+        text: messageInput.value
+      });
+
+      messageInput.value = '';
+    }
+
+    // Renders a single message on the page
+    function addMessage (message) {
+      document.getElementById('main').innerHTML += `<p>Round number: ${message.id}</p>`;
+      document.getElementById('main').innerHTML += `<p>${message.round.result}</p>`;
+      document.getElementById('main').innerHTML += `<p>${message.round.path}</p>`;
+    }
+    
+    const main = async () => {
+      // Find all existing messages
+      const messages = await app.service('messages').find();
+
+      // Add existing messages to the list
+      messages.forEach(addMessage);
+
+      // Add any newly created message to the list in real-time
+      app.service('messages').on('created', addMessage);
+    };
+
+    main();
+  </script>
+</body>
+</html>

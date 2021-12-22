@@ -1,0 +1,2 @@
+import { fnData } from "./fnData";
+
